@@ -1,0 +1,74 @@
+@incl std/io/log
+
+@incl fibs/push
+@incl fibs/at
+uint: fn fibonnaci(uint: n) do
+  uint[]: mut fibs = [0, 1]
+  uint: mut i;
+
+  for: i = 2, i < n + 1, i++ do
+    fibs:push(fibs:at(-1) + fibs:at(-2))
+  end
+
+  return fibs
+end
+
+
+uint: fn old_fib(uint: n) do
+  if: n == 0 do
+    return 0
+  else if: n <= 2 do
+    return 1
+  end
+
+  return old_fib(n - 1) + old_fib(n - 2)
+end
+
+@incl performance/now
+@incl avg_ms/toFixed
+uint: fn old() do
+  float: mut avgTime = 0
+
+  float: startTime = performance:now();
+  old_fib(45)
+  float: elapsed = performance:now() - startTime;
+  avgTime = avgTime + elapsed
+ 
+  // We convert ms to seconds
+  float: avg_ms = avgTime / 1000 
+  log("Fourty-five (OLD)", avg_ms:toFixed(3)/* makes sure we only show 3 decimal places. */, "s")
+end
+
+uint: fn main() do
+  float[]: mut avgTime = [0, 0, 0, 0, 0, 0, 0, 0];
+  str[]: strs = ["Ten", "Thirty", "Fourty-five", "Fifty-five", "Seventy", "One-thousand", "Ten-thousand", "One-hundred-thousand"]
+  uint: iters = 5000;
+  uint[]: iterations = [10, 30, 45, 55, 70, 1000, 10000, 100000] 
+
+  uint: mut ptr = 0;
+
+  uint: mut i;
+
+  for: ptr = 0, ptr < 8, ptr++ do
+    for: i = 0, i < iters, i++ do
+      float: startTime = performance:now();
+      fibonnaci(iterations[ptr])
+      float: elapsed = performance:now() - startTime;
+      avgTime[ptr] = avgTime[ptr] + elapsed
+    end
+  end
+
+  for: ptr = 0, ptr < 8, ptr++ do
+    float: avg = avgTime[ptr] / iters
+    float: avg_ms = avg * 1000
+    log(strs[ptr], avg_ms:toFixed(3), "ms")
+  end
+
+  log("------------------------------")
+
+  old()
+ 
+  return 0
+end
+
+
