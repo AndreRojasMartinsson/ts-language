@@ -79,7 +79,7 @@ export async function compileSourceFile(filePath: string) {
 		process.exit(1);
 	}
 
-	// $Log.$info(inspect(ast, { depth: Infinity, colors: true }));
+	$Log.$info(inspect(ast, { depth: 15, colors: true }));
 
 	const res: string = new ToTSVisitor().visitNode(ast);
 	// console.log(res);
