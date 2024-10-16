@@ -11,7 +11,7 @@ import { join } from "../utils/path";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import crypto from "node:crypto";
-import { $ } from "bun";
+import { $, inspect } from "bun";
 import chalkTemplate from "chalk-template";
 import { WORKING_DIRECTORY } from "../constants";
 import { IOptions } from "../cli/types.ts";
@@ -27,6 +27,8 @@ export function parseFile(
     parserInstance.emit({ name: file.name, source: file.source });
     process.exit(1);
   }
+
+  // console.log(inspect(ast, { depth: Infinity, colors: true }));
 
   return ast;
 }
@@ -49,7 +51,6 @@ export function linkIncludes(file: IFile & { source: string }): string {
       const { dir } = path.parse(file.path);
 
       const relPath = path.resolve(dir, importPath);
-      console.log(relPath);
 
       const importSourceBuf = Bun.mmap(relPath);
       const importSource = new TextDecoder("utf-8").decode(importSourceBuf);
@@ -117,7 +118,12 @@ export const ExitCode = process.exitCode
   }
   
   export namespace server {
-    export const http = __HTTP
+    export function http(callback: (req: any, res: any) => void) {
+      return __HTTP.createServer((req, res) => {
+        res.End = res.end
+        return callback(req, res)
+      })
+    }
   }
   
 

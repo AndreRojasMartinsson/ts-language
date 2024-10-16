@@ -37,6 +37,7 @@ import {
 } from "./nodes";
 import { BaseParser } from ".";
 import { SymbolTable } from "../lib/symbol-table";
+import { log, warn } from "node:console";
 
 class SCParser extends BaseParser {
   private symbols: SymbolTable[] = [];
@@ -284,15 +285,37 @@ class SCParser extends BaseParser {
     const body = [];
 
     while (!this.stream.match(Token.EndKw, Token.ElseKw, Token.ElseIfKw)) {
+      const lookahead_1 = this.stream.peek();
+      const lookahead_2 = this.stream.peek(1);
+      const lookahead_3 = this.stream.peek(2);
+      // console.log(
+      //   "Eh",
+      //   this.stream.current(),
+      //   this.stream.peek(),
+      //   this.stream.peek(1),
+      // );
+
+      if (
+        this.stream.match(Token.Identifier) &&
+        this.tokMatch(lookahead_1, Token.Colon) &&
+        this.tokMatch(lookahead_2, Token.MutKw, Token.Identifier) &&
+        !this.tokMatch(lookahead_3, Token.Colon, Token.LParen, Token.LBracket)
+      ) {
+        body.push(this.parseVariableDeclaration());
+      }
       if (this.stream.match(Token.Identifier, Token.PrefixOperator)) {
         body.push(this.parseExpression());
+      }
+
+      if (this.stream.match(Token.DataType)) {
+        body.push(this.parseVariableDeclaration());
       }
       if (this.stream.match(Token.ReturnKw))
         body.push(this.parseReturnStatement());
       if (this.stream.match(Token.WhileKw))
         body.push(this.parseWhileStatement());
-      if (this.stream.match(Token.DataType))
-        body.push(this.parseVariableDeclaration());
+      // if (this.stream.match(Token.DataType))
+      // body.push(this.parseVariableDeclaration());
       if (this.stream.match(Token.ForKw)) body.push(this.parseForStatement());
       if (this.stream.match(Token.IfKw)) body.push(this.parseIfStatement());
       if (this.stream.match(Token.ElseKw)) break;
@@ -372,12 +395,12 @@ class SCParser extends BaseParser {
     if (this.scope().lookup(ident.image, false)) {
       const data = this.scope().get(ident.image, "loc");
 
-      this.raiseDuplicateVariableError(
-        ident.image,
-        data,
-        new Range(ident.startOffset, ident.endOffset! + 1),
-        "variable",
-      );
+      // this.raiseDuplicateVariableError(
+      //   ident.image,
+      //   data,
+      //   new Range(ident.startOffset, ident.endOffset! + 1),
+      //   "variable",
+      // );
     }
 
     this.scope().insert(ident.image, {
@@ -479,7 +502,7 @@ class SCParser extends BaseParser {
     );
   }
 
-  private parseExpression(): ExpressionNode {
+  private parseExpression(hasParen = false): ExpressionNode {
     const expr: any = this.parseExpression_1(this.parsePrimary(), 0);
 
     if (!(expr instanceof ASTNode) && typeof expr === "object") {
@@ -490,6 +513,7 @@ class SCParser extends BaseParser {
             expr.operator,
             expr.rhs,
             expr.span,
+            hasParen,
           );
         case "AssignmentExpression":
           return new AssignmentExpressionNode(
@@ -614,7 +638,7 @@ class SCParser extends BaseParser {
       return this.parseLiteral();
     } else if (this.stream.match(Token.LParen)) {
       this.stream.consume(Token.LParen);
-      const expr = this.parseExpression();
+      const expr: any = this.parseExpression(true);
 
       if (!this.stream.match(Token.RParen)) {
         this.raiseUnclosedParenthesisError([

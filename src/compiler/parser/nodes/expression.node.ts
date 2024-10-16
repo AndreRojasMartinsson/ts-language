@@ -31,6 +31,7 @@ export class BinaryExpressionNode extends ExpressionNode {
     public operator: IdentifierNode,
     public rhs: ExpressionNode,
     span: Range,
+    public hasParentheses: boolean,
   ) {
     super("BinaryExpression", span);
   }

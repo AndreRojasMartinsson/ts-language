@@ -225,7 +225,9 @@ type float = number
     if (node.alternate) {
       stack.push(`else`);
       if (node.alternate instanceof BlockNode) {
-        stack.push("{\n    " + this.visitEachChild(node.block).join("\n  "));
+        stack.push(
+          "{\n    " + this.visitEachChild(node.alternate).join("\n  "),
+        );
         stack.push(`\n  }\n`);
       } else if (node.alternate instanceof IfStatementNode) {
         stack.push(this.visitNode(node.alternate));
@@ -319,6 +321,8 @@ type float = number
     const lhs = this.visitNode(node.lhs);
     const operator = node.operator.image;
     const rhs = this.visitNode(node.rhs);
+
+    if (node.hasParentheses) return `(${lhs} ${operator} ${rhs})`;
 
     return `${lhs} ${operator} ${rhs}`;
   }
