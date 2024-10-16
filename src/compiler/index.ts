@@ -76,6 +76,8 @@ export function lexFile(file: IFile & { source: string }): IToken[] {
 function injectSTD(generatedCode: string) {
   let code = "/* COMPILED BY SC COMPILER */";
   code += `
+import __HTTP from "node:http"
+
 namespace std {
   export function log(...text: string[]) {
     console.log(...text)
@@ -112,8 +114,10 @@ namespace std {
     export const Stdout = process.stdout
     export const ExecPath = process.execPath
   }
-
-
+  
+  export namespace server {
+    export const http = __HTTP
+  }
   
 
 
