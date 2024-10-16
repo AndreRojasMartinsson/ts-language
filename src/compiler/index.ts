@@ -78,6 +78,8 @@ function injectSTD(generatedCode: string) {
   let code = "/* COMPILED BY SC COMPILER */";
   code += `
 import __HTTP from "node:http"
+import __FS from "node:fs"
+import __PATH from "node:path"
 
 namespace std {
   export function log(...text: string[]) {
@@ -91,6 +93,9 @@ namespace std {
   number.ParseInt = parseInt
   number.IsFinite = isFinite
   number.IsNaN = isNaN
+
+  export const fs = __FS
+  export const path = path
 
 
   export namespace proc {
