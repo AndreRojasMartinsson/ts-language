@@ -1,0 +1,88 @@
+import { Token } from "./tokens";
+
+const CategoryTokens = [
+  Token.DataType,
+  Token.Literal,
+  Token.Operator,
+  Token.LogicalOperator,
+  Token.AdditiveOperator,
+  Token.PostfixOperator,
+  Token.PrefixOperator,
+  Token.UnaryOperator,
+  Token.MultiplicativeOperator,
+  Token.ExponentialOperator,
+  Token.EqualityOperator,
+  Token.RelationalOperator,
+];
+
+const PunctuationTokens = [Token.Whitespace, Token.Semicolon];
+const MiscTokens = [
+  Token.SingleLineComment,
+  Token.DocComment,
+  Token.MultiLineComment,
+];
+
+const MainTokens = [
+  Token.RawStringLiteral,
+  Token.StringLiteral,
+  Token.FloatLiteral,
+  Token.IntLiteral,
+  Token.BoolLiteral,
+  Token.PrimitiveType,
+
+  Token.NotEqual,
+  Token.Equal,
+  Token.Assign,
+
+  Token.LParen,
+  Token.RParen,
+  Token.LBrace,
+  Token.RBrace,
+  Token.LBracket,
+  Token.RBracket,
+  Token.Comma,
+  Token.Colon,
+  Token.At,
+  Token.Dollar,
+  Token.Octothorpe,
+  Token.Question,
+  Token.Period,
+
+  Token.Increment,
+  Token.Add,
+  Token.Decrement,
+  Token.Minus,
+  Token.Multiply,
+  Token.Exponent,
+  Token.Divide,
+  Token.Modulus,
+  Token.Bang,
+  Token.LogicalOr,
+  Token.LogicalAnd,
+
+  Token.LTE,
+  Token.GTE,
+  Token.LT,
+  Token.GT,
+
+  Token.Void,
+  Token.FnKw,
+  Token.MutKw,
+  Token.ReturnKw,
+  Token.IfKw,
+  Token.WhileKw,
+  Token.ForKw,
+  Token.ElseIfKw,
+  Token.EndKw,
+  Token.DoKw,
+  Token.ElseKw,
+
+  Token.Identifier,
+];
+
+export const LanguageTokens = [
+  ...CategoryTokens,
+  ...PunctuationTokens,
+  ...MiscTokens,
+  ...MainTokens,
+];

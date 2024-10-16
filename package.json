@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/package",
+  "name": "smartcode-compiler",
+  "module": "src/cli/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun build --target bun --minify --packages external --compile --sourcemap src/cli/index.ts --outfile ./sc && sudo cp ./sc /usr/local/bin/sc",
+    "build:nocopy": "bun build --target bun --minify --packages external --compile --sourcemap src/cli/index.ts --outfile ./sc"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/figlet": "^1.7.0",
+    "@types/node": "^22.7.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "chalk-template": "^1.1.0",
+    "chevrotain": "^11.0.3",
+    "codespan-wasm": "^0.4.0",
+    "commander": "^12.1.0",
+    "figlet": "^1.8.0",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-smartcode": "^0.1.1",
+    "xxhash-wasm": "^1.0.2",
+    "zod": "^3.23.8"
+  }
+}
