@@ -14,6 +14,7 @@ import crypto from "node:crypto";
 import { $ } from "bun";
 import chalkTemplate from "chalk-template";
 import { WORKING_DIRECTORY } from "../constants";
+import { IOptions } from "../cli/types.ts";
 
 export function parseFile(
   file: IFile & { source: string },
@@ -217,7 +218,7 @@ namespace std {
   return code;
 }
 
-export async function compileFile(file: IFile) {
+export async function compileFile(file: IFile, options: IOptions) {
   const bufferSource = Bun.mmap(file.path);
   const source = new TextDecoder("utf-8").decode(bufferSource);
 
@@ -247,6 +248,8 @@ export async function compileFile(file: IFile) {
   await Bun.write(tmpfile, generatedCode, {
     createPath: true,
   });
+
+  if (options.verbose) console.log(generatedCode);
 
   // console.log(
   //   generatedCode

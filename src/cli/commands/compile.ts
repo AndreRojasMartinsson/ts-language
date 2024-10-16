@@ -16,7 +16,7 @@ async function handleCompileCommand(inputs: string[], options: IOptions) {
   let files: IFile[] = await getSourceFiles(inputs);
 
   if (options.force) {
-    for await (const file of files) await compileFile(file);
+    for await (const file of files) await compileFile(file, options);
 
     return;
   }
@@ -49,13 +49,14 @@ async function handleCompileCommand(inputs: string[], options: IOptions) {
 
   if (!options.force) CacheStore.commit();
 
-  for await (const file of files) await compileFile(file);
+  for await (const file of files) await compileFile(file, options);
 }
 
 export function compileCommand() {
   cliProgram
     .command("build <inputs...>")
     .description("Builds the inputs into executables that can be ran")
+    .option("--verbose", "Use verbose logging", false)
     .option("-O1", "Use optimization level 1", true)
     .option("-O2", "Use optimization level 2", false)
     .option("-f, --force", "Forces files to compile, skipping caching", false)
