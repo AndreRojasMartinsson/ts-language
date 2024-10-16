@@ -109,6 +109,7 @@ namespace std {
     export const Argv0 = process.argv0
     export const Stdin = process.stdin
     export const Title = process.title
+export const ExitCode = process.exitCode
     export const Hrtime = process.hrtime
     export const Stderr = process.stderr
     export const Stdout = process.stdout

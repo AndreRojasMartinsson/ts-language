@@ -53,7 +53,7 @@ type float = number
     return (
       prefix +
       this.visitEachChild(node).join("\n\n") +
-      "\nprocess.exit(main(process.argv))"
+      "\nlet status_code = main(process.argv); process.exitCode = status_code"
     );
   }
 
