@@ -90,7 +90,7 @@ namespace std {
   number.IsNaN = isNaN
 
 
-  export namespace process {
+  export namespace proc {
     export const Env = process.env
     export const Cwd = process.cwd
     export const Exit = process.exit
