@@ -209,8 +209,6 @@ export async function compileFile(file: IFile) {
 
   generatedCode = injectSTD(generatedCode);
 
-  console.log(generatedCode);
-
   const endTime = performance.now();
   const timeElapsed = (endTime - startTime).toFixed(2);
 
