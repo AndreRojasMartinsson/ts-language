@@ -88,6 +88,31 @@ namespace std {
   number.IsFinite = isFinite
   number.IsNaN = isNaN
 
+
+  export namespace process {
+    export const Env = process.env
+    export const Cwd = process.cwd
+    export const Exit = process.exit
+    export const Kill = process.kill
+    export const Abort = process.abort
+    export const Umask = process.umask
+    export const Uptime = process.uptime
+    export const LoadEnvFile = process.loadEnvFile
+    export const AvailableMemory = process.availableMemory
+    export const Pid = process.pid
+    export const Arch = process.arch
+    export const Argv = process.argv
+    export const Ppid = process.ppid
+    export const Argv0 = process.argv0
+    export const Stdin = process.stdin
+    export const Title = process.title
+    export const Hrtime = process.hrtime
+    export const Stderr = process.stderr
+    export const Stdout = process.stdout
+    export const ExecPath = process.execPath
+  }
+
+
   
 
 
