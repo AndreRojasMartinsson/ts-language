@@ -730,8 +730,6 @@ class SCParser extends BaseParser {
 
       traverse(ident);
 
-      console.log(parts);
-
       if (!this.scope().lookup(parts[0])) {
         if (ident instanceof IdentifierNode) {
           this.raiseUndefinedVariableError(identifier.image, identifier.span);
