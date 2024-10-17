@@ -37,10 +37,585 @@ import {
 } from "./nodes";
 import { BaseParser } from ".";
 import { SymbolTable } from "../lib/symbol-table";
-import { log, warn } from "node:console";
+import { log } from "console";
+
+const SYMBOLS = {
+  ["std"]: [
+    "std:log",
+    "std:string",
+    "std:number",
+    "std:number:parse_float",
+    "std:number:parse_int",
+    "std:number:is_finite",
+    "std:number:is_nan",
+    "std:path:join",
+    "std:path:resolve",
+    "std:path:parse",
+    "std:path:relative",
+    "std:fs:read_dir",
+    "std:fs:append_file",
+    "std:fs:chown",
+    "std:fs:close",
+    "std:fs:copy_file",
+    "std:fs:cp",
+    "std:fs:read_stream",
+    "std:fs:write_stream",
+    "std:fs:exists",
+    "std:fs:glob",
+    "std:fs:mkdir",
+    "std:fs:mkdtemp",
+    "std:fs:read_file",
+    "std:fs:write_file",
+    "std:fs:rename",
+    "std:fs:rm_dir",
+    "std:fs:rm",
+    "std:fs:stat",
+    "std:proc:env",
+    "std:proc:cwd",
+    "std:proc:exit",
+    "std:proc:kill",
+    "std:proc:abort",
+    "std:proc:umask",
+    "std:proc:uptime",
+    "std:proc:load_env_file",
+    "std:proc:available_memory",
+    "std:proc:pid",
+    "std:proc:arch",
+    "std:proc:argv",
+    "std:proc:ppid",
+    "std:proc:argv0",
+    "std:proc:stdin",
+    "std:proc:title",
+    "std:proc:exit_code",
+    "std:proc:hrtime",
+    "std:proc:stderr",
+    "std:proc:stdout",
+    "std:proc:exec_path",
+    "std:server:http",
+    "std:server:net",
+    "std:array",
+    "std:array:int8",
+    "std:array:uint8",
+    "std:array:int16",
+    "std:array:uint16",
+    "std:array:int32",
+    "std:array:uint32",
+    "std:array:float32",
+    "std:array:float64",
+    "std:constants::INF",
+    "std:map:create",
+    "std:map:weak:create",
+    "std:set:create",
+    "std:set:weak:create",
+    "std:math:E",
+    "std:math:LN10",
+    "std:math:LN2",
+    "std:math:LOG10E",
+    "std:math:LOG2E",
+    "std:math:PI",
+    "std:math:SQRT1_2",
+    "std:math:SQRT2",
+    "std:math:imul",
+    "std:math:sign",
+    "std:math:log10",
+    "std:math:log2",
+    "std:math:log1p",
+    "std:math:expm1",
+    "std:math:cosh",
+    "std:math:sinh",
+    "std:math:tanh",
+    "std:math:acosh",
+    "std:math:asinh",
+    "std:math:atanh",
+    "std:math:hypot",
+    "std:math:trunc",
+    "std:math:fround",
+    "std:math:cbrt",
+    "std:math:abs",
+    "std:math:acos",
+    "std:math:asin",
+    "std:math:atan",
+    "std:math:atan2",
+    "std:math:ceil",
+    "std:math:cos",
+    "std:math:exp",
+    "std:math:floor",
+    "std:math:log",
+    "std:math:max",
+    "std:math:min",
+    "std:math:pow",
+    "std:math:random",
+    "std:math:round",
+    "std:math:sin",
+    "std:math:sqrt",
+    "std:math:tan",
+  ],
+  ["std/log"]: ["log"],
+  ["std/number"]: [
+    "number",
+    "number:parse_float",
+    "number:parse_int",
+    "number:is_finite",
+    "number:is_nan",
+  ],
+  ["std/string"]: ["string"],
+  ["std/path"]: ["path:join", "path:resolve", "path:parse", "path:relative"],
+  ["std/fs"]: [
+    "fs:read_dir",
+    "fs:append_file",
+    "fs:chown",
+    "fs:close",
+    "fs:copy_file",
+    "fs:cp",
+    "fs:read_stream",
+    "fs:write_stream",
+    "fs:exists",
+    "fs:glob",
+    "fs:mkdir",
+    "fs:mkdtemp",
+    "fs:read_file",
+    "fs:write_file",
+    "fs:rename",
+    "fs:rm_dir",
+    "fs:rm",
+    "fs:stat",
+  ],
+  ["std/proc"]: [
+    "proc:env",
+    "proc:cwd",
+    "proc:exit",
+    "proc:kill",
+    "proc:abort",
+    "proc:umask",
+    "proc:uptime",
+    "proc:load_env_file",
+    "proc:available_memory",
+    "proc:pid",
+    "proc:arch",
+    "proc:argv",
+    "proc:ppid",
+    "proc:argv0",
+    "proc:stdin",
+    "proc:title",
+    "proc:exit_code",
+    "proc:hrtime",
+    "proc:stderr",
+    "proc:stdout",
+    "proc:exec_path",
+  ],
+  ["std/server"]: ["server:http", "server:net"],
+  ["std/array"]: [
+    "array:int8",
+    "array:uint8",
+    "array:int16",
+    "array:uint16",
+    "array:int32",
+    "array:uint32",
+    "array:float32",
+    "array:float64",
+  ],
+  ["std/constants"]: ["constants:INF"],
+  ["std/map"]: ["map:create", "map:weak:create"],
+  ["std/set"]: ["set:create", "set:weak:create"],
+  ["std/math"]: [
+    "math:E",
+    "math:LN10",
+    "math:LN2",
+    "math:LOG10E",
+    "math:LOG2E",
+    "math:PI",
+    "math:SQRT1_2",
+    "math:SQRT2",
+    "math:imul",
+    "math:sign",
+    "math:log10",
+    "math:log2",
+    "math:log1p",
+    "math:expm1",
+    "math:cosh",
+    "math:sinh",
+    "math:tanh",
+    "math:acosh",
+    "math:asinh",
+    "math:atanh",
+    "math:hypot",
+    "math:trunc",
+    "math:fround",
+    "math:cbrt",
+    "math:abs",
+    "math:acos",
+    "math:asin",
+    "math:atan",
+    "math:atan2",
+    "math:ceil",
+    "math:cos",
+    "math:exp",
+    "math:floor",
+    "math:log",
+    "math:max",
+    "math:min",
+    "math:pow",
+    "math:random",
+    "math:round",
+    "math:sin",
+    "math:sqrt",
+    "math:tan",
+  ],
+};
+
+const STD_NAMESPACES = {
+  ["std/log"]: `
+  export function log(...text: string[]) {
+    console.log(...text)
+  }
+
+`,
+  ["std/number"]: `
+
+  export const number: any = (value?: any) => Number(value);
+  number.parse_float = parseFloat
+  number.parse_int = parseInt
+  number.is_finite = isFinite
+  number.is_nan = isNaN
+`,
+  ["std/string"]: `
+
+  export const string = String
+`,
+
+  ["std/fs"]: `
+  export namespace fs {
+    export const read_dir = __FS.readDirSync
+    export const append_file = __FS.appendFileSync
+    export const chown = __FS.chownSync
+    export const close = __FS.closeSync
+    export const copy_file = __FS.copyFileSync
+    export const cp = __FS.cpSync
+    export const read_stream = __FS.createReadStream
+    export const write_stream = __FS.createWriteStream
+    export const exists = __FS.existsSync
+    export const glob = __FS.globSync
+    export const mkdir = __FS.mkdirSync
+    export const mkdtemp = __FS.mkdtempSync
+    export const read_file = __FS.readFileSync
+    export const write_file = __FS.writeFileSync
+    export const rename = __FS.renameSync
+    export const rm_dir = __FS.rmdirSync
+    export const rm = __FS.rmSync
+    export const stat = __FS.statSync
+  }
+`,
+  ["std/path"]: `
+  export namespace path {
+    export const join = __PATH.join
+    export const resolve = __PATH.resolve
+    export const parse = __PATH.parse
+    export const relative = __PATH.relative
+  }
+
+
+`,
+  ["std/proc"]: `
+  export namespace proc {
+    export const env = process.env
+    export const cwd = process.cwd
+    export const exit = process.exit
+    export const kill = process.kill
+    export const abort = process.abort
+    export const umask = process.umask
+    export const uptime = process.uptime
+    export const load_env_file = process.loadEnvFile
+    export const available_memory = process.availableMemory
+    export const pid = process.pid
+    export const arch = process.arch
+    export const argv = process.argv
+    export const ppid = process.ppid
+    export const argv0 = process.argv0
+    export const stdin = process.stdin
+    export const title = process.title
+    export const exit_code = process.exitCode
+    export const hrtime = process.hrtime
+    export const stderr = process.stderr
+    export const stdout = process.stdout
+    export const exec_path = process.execPath
+  }
+
+`,
+  ["std/server"]: `
+  export namespace server {
+    export function http(callback: (req: any, res: any) => void) {
+      return __HTTP.createServer((req, res) => {
+        res.End = res.end
+        return callback(req, res)
+      })
+    }
+    
+    export function net() {
+      return __NET.createServer()
+    }
+  }
+`,
+  ["std/constants"]: `
+  export namespace constants {
+    export const INF = Infinity
+  }
+`,
+  ["std/map"]: `
+  export namespace map {
+    export const create = () => new Map()
+
+    export const weak = {
+      create: () => new WeakMap()
+    }
+  }
+
+ `,
+  ["std/set"]: `
+ export namespace set {
+    export const create = () => new Set()
+    
+    export const weak = {
+      create: () => new WeakSet()
+    }
+  }
+
+ 
+`,
+  ["std/math"]: `
+ export namespace math {
+    export const E: Readonly<number> = Math.E 
+    export const LN10: Readonly<number> = Math.LN10 
+    export const LN2: Readonly<number> = Math.LN2
+    export const LOG10E: Readonly<number> = Math.LOG10E 
+    export const LOG2E: Readonly<number> = Math.LOG2E
+    export const PI: Readonly<number> = Math.PI
+    export const SQRT1_2: Readonly<number> = Math.SQRT1_2 
+    export const SQRT2: Readonly<number> = Math.SQRT2
+
+    export const imul = Math.imul
+    export const sign = Math.sign
+    export const log10 = Math.log10
+    export const log2 = Math.log2
+    export const log1p = Math.log1p
+    export const expm1 = Math.expm1
+    export const cosh = Math.cosh
+    export const sinh = Math.sinh
+    export const tanh = Math.tanh
+    export const acosh = Math.acosh
+    export const asinh = Math.asinh
+    export const atanh = Math.atanh
+    export const hypot = Math.hypot
+    export const trunc = Math.trunc
+    export const fround = Math.fround
+    export const cbrt = Math.cbrt
+    export const abs = Math.abs
+    export const acos = Math.acos
+    export const asin = Math.asin
+    export const atan = Math.atan
+    export const atan2 = Math.atan2
+    export const ceil = Math.ceil
+    export const cos = Math.cos
+    export const exp = Math.exp
+    export const floor = Math.floor
+    export const log = Math.log
+    export const max = Math.max
+    export const min = Math.min
+    export const pow = Math.pow
+    export const random = Math.random
+    export const round = Math.round
+    export const sin = Math.sin
+    export const sqrt = Math.sqrt
+    export const tan = Math.tan
+  }
+`,
+  ["std"]: `
+  export namespace std {
+  export function log(...text: string[]) {
+    console.log(...text)
+  }
+
+  export const string = String
+
+  export const number: any = (value?: any) => Number(value);
+  number.parse_float = parseFloat
+  number.parse_int = parseInt
+  number.is_finite = isFinite
+  number.is_nan = isNaN
+
+  export namespace fs {
+    export const read_dir = __FS.readDirSync
+    export const append_file = __FS.appendFileSync
+    export const chown = __FS.chownSync
+    export const close = __FS.closeSync
+    export const copy_file = __FS.copyFileSync
+    export const cp = __FS.cpSync
+    export const read_stream = __FS.createReadStream
+    export const write_stream = __FS.createWriteStream
+    export const exists = __FS.existsSync
+    export const glob = __FS.globSync
+    export const mkdir = __FS.mkdirSync
+    export const mkdtemp = __FS.mkdtempSync
+    export const read_file = __FS.readFileSync
+    export const write_file = __FS.writeFileSync
+    export const rename = __FS.renameSync
+    export const rm_dir = __FS.rmdirSync
+    export const rm = __FS.rmSync
+    export const stat = __FS.statSync
+  }
+
+  export namespace path {
+    export const join = __PATH.join
+    export const resolve = __PATH.resolve
+    export const parse = __PATH.parse
+    export const relative = __PATH.relative
+  }
+
+  // export const fs = __FS
+
+
+  export namespace proc {
+    export const env = process.env
+    export const cwd = process.cwd
+    export const exit = process.exit
+    export const kill = process.kill
+    export const abort = process.abort
+    export const umask = process.umask
+    export const uptime = process.uptime
+    export const load_env_file = process.loadEnvFile
+    export const available_memory = process.availableMemory
+    export const pid = process.pid
+    export const arch = process.arch
+    export const argv = process.argv
+    export const ppid = process.ppid
+    export const argv0 = process.argv0
+    export const stdin = process.stdin
+    export const title = process.title
+    export const exit_code = process.exitCode
+    export const hrtime = process.hrtime
+    export const stderr = process.stderr
+    export const stdout = process.stdout
+    export const exec_path = process.execPath
+  }
+  
+  export namespace server {
+    export function http(callback: (req: any, res: any) => void) {
+      return __HTTP.createServer((req, res) => {
+        res.End = res.end
+        return callback(req, res)
+      })
+    }
+    
+    export function net() {
+      return __NET.createServer()
+    }
+  }
+  
+
+
+  // export namespace number {
+  //   export const self = Number  
+  //   export const float = parseFloat()
+  //   export const int = parseInt()
+  //   export const IsFinite = isFinite
+  //   export const IsNaN = isNaN
+  // }
+
+  export const array: any = (len?: number) => new Array(len) 
+  array.int8 = Int8Array
+  array.uint8 = Uint8Array
+  array.int16 = Int8Array
+  array.uint16 = Uint16Array
+  array.int32 = Int32Array
+  array.uint32 = Uint32Array
+  array.float32 = Float32Array
+  array.float64 = Float64Array
+
+  // export namespace arr {
+  //   export const self = Array
+  //   export const int8 = Int8Array
+  //   export const uint8 = Uint8Array
+  //   export const int16 = Int16Array
+  //   export const uint16 = Uint16Array
+  //   export const int32 = Int32Array
+  //   export const uint32 = Uint32Array
+  //
+  //   export const float16 = Float16Array
+  //   export const float32 = Float32Array
+  //   export const float64 = Float64Array
+  // }
+
+  export namespace constants {
+    export const INF = Infinity
+  }
+
+  export namespace map {
+    export const create = () => new Map()
+
+    export const weak = {
+      create: () => new WeakMap()
+    }
+  }
+
+  export namespace set {
+    export const create = () => new Set()
+    
+    export const weak = {
+      create: () => new WeakSet()
+    }
+  }
+
+  export namespace math {
+    export const E: Readonly<number> = Math.E 
+    export const LN10: Readonly<number> = Math.LN10 
+    export const LN2: Readonly<number> = Math.LN2
+    export const LOG10E: Readonly<number> = Math.LOG10E 
+    export const LOG2E: Readonly<number> = Math.LOG2E
+    export const PI: Readonly<number> = Math.PI
+    export const SQRT1_2: Readonly<number> = Math.SQRT1_2 
+    export const SQRT2: Readonly<number> = Math.SQRT2
+
+    export const imul = Math.imul
+    export const sign = Math.sign
+    export const log10 = Math.log10
+    export const log2 = Math.log2
+    export const log1p = Math.log1p
+    export const expm1 = Math.expm1
+    export const cosh = Math.cosh
+    export const sinh = Math.sinh
+    export const tanh = Math.tanh
+    export const acosh = Math.acosh
+    export const asinh = Math.asinh
+    export const atanh = Math.atanh
+    export const hypot = Math.hypot
+    export const trunc = Math.trunc
+    export const fround = Math.fround
+    export const cbrt = Math.cbrt
+    export const abs = Math.abs
+    export const acos = Math.acos
+    export const asin = Math.asin
+    export const atan = Math.atan
+    export const atan2 = Math.atan2
+    export const ceil = Math.ceil
+    export const cos = Math.cos
+    export const exp = Math.exp
+    export const floor = Math.floor
+    export const log = Math.log
+    export const max = Math.max
+    export const min = Math.min
+    export const pow = Math.pow
+    export const random = Math.random
+    export const round = Math.round
+    export const sin = Math.sin
+    export const sqrt = Math.sqrt
+    export const tan = Math.tan
+  }
+}
+`,
+};
 
 class SCParser extends BaseParser {
   private symbols: SymbolTable[] = [];
+  public namespacesToInject: string[] = [];
 
   private static RESERVED_KEYWORDS: string[] = [
     "pub",
@@ -66,18 +641,92 @@ class SCParser extends BaseParser {
   public set input(data: { source: string; tokens: IToken[]; fileId: string }) {
     super.input = data;
     this.symbols = [new SymbolTable()];
+    this.namespacesToInject = [];
   }
 
   public override parse(): SourceFileNode {
     const body: (FnDeclarationNode | DirectiveNode)[] = [];
     const lastTok = this.stream.last();
 
+    // for (const str of FULL_STD_SYMBOLS) {
+    //   this.scope().insert(str, {
+    //     kind: "std",
+    //   });
+    // }
+
+    // const tble: any[] = [];
+    // let ptr = 0;
+
+    // const traverse = (node) => {
+    //   // ptr++;
+    //   tble[ptr] ??= [];
+    //
+    //   for (const [key, value] of Object.entries(node)) {
+    //     if ("properties" in value) {
+    //       // lfg
+    //       for (const prop of value.properties) {
+    //         tble[ptr].push(key + ":" + prop);
+    //       }
+    //     }
+    //
+    //     for (const [prop, val] of Object.entries(value)) {
+    //       if (prop === "properties") continue;
+    //
+    //       ptr++;
+    //       tble[ptr] ??= [];
+    //       tble[ptr].push(key);
+    //       traverse({ [prop]: val });
+    //     }
+    //   }
+    //
+    //   if ("properties" in node) {
+    //     // lfg
+    //   }
+    // };
+    //
+    // traverse(STD_SYMS);
+    // console.log(tble);
+
+    // console.log(this.stream.current());
+
     while (!this.stream.atEndOfStream()) {
+      // const lookahead_1 = this.stream.peek();
+      //
+      // if (
+      //   this.stream.match(Token.Identifier, Token.DataType) &&
+      //   this.tokMatch(lookahead_1, Token.LBracket)
+      // ) {
+      //   body.push(this.parseFnDeclaration());
+      // }
+
+      // if (
+      //   this.stream.match(Token.Identifier, Token.DataType) &&
+      //   this.tokMatch(lookahead_1, Token.Colon)
+      // ) {
+      //   body.push(this.parseFnDeclaration());
+      // }
+
+      // if (this.stream.match(Token.At)) {
+      //   body.push(this.parseDirective());
+      // }
+
       if (this.stream.match(Token.DataType)) {
         body.push(this.parseFnDeclaration());
-      } else if (this.stream.match(Token.At)) {
-        body.push(this.parseDirective());
+        continue;
       }
+
+      if (this.stream.match(Token.At)) {
+        body.push(this.parseDirective());
+        continue;
+      }
+      //
+      // if (this.stream.match(Token.DataType, Token.Identifier)) {
+      //   body.push(this.parseFnDeclaration());
+      // } else if (this.stream.match(Token.At)) {
+      //   body.push(this.parseDirective());
+      // }
+
+      // console.log(this.stream.current());
     }
 
     return new SourceFileNode(
@@ -138,32 +787,70 @@ class SCParser extends BaseParser {
     }
 
     const fullPath = identifiers.map((ident) => ident.image);
-    const subPath = [...fullPath];
-    const name = subPath.pop();
 
-    if (this.symbols[0].lookup(name)) {
-      const lastIdent = identifiers.at(-1)!;
-      const data = this.symbols[0].get(name, "loc")!;
+    const pth = fullPath.join("/");
 
-      this.raiseDuplicateVariableError(
-        name,
-        data,
-        new Range(lastIdent.startOffset, lastIdent.endOffset! + 1),
-        "import",
-      );
+    const namespaceStr = STD_NAMESPACES[pth];
+
+    if (namespaceStr) {
+      this.namespacesToInject.push(namespaceStr);
     }
 
-    const lastIdent = identifiers.at(-1)!;
-    this.symbols[0].insert(name, {
-      kind: "import",
-      loc: new Range(lastIdent.startOffset, lastIdent.endOffset! + 1),
-      path: subPath,
-    });
+    const symbols = SYMBOLS[pth];
+    if (symbols) {
+      for (const symbol of symbols) {
+        this.scope().insert(symbol, { kind: "import" });
+      }
+    }
 
-    this.symbols[0].insert(fullPath.join(":"), {
-      kind: "import",
-      loc: new Range(identifiers[0].startOffset, lastIdent.endOffset! + 1),
-    });
+    //
+    // let entries: any[] = [];
+    //
+    // for (const [key, value] of Object.entries(STD_SYMS.std)) {
+    //   if (key === "properties") continue;
+    //
+    //   console.log(key, value);
+    // }
+    //
+    // console.log(fullPath, subPath, name);
+
+    //console.log(fullPath, subPath, name);
+
+    // const _path = fullPath.join(":");
+    //
+    // const arr = FULL_STD_SYMBOLS.filter((sym) => sym.includes(_path));
+    //
+    // console.log(arr);
+    //
+    // for (const str of arr) {
+    //   this.scope().insert(str, {
+    //     kind: "std",
+    //   });
+    // }
+    //
+    // if (this.symbols[0].lookup(name)) {
+    //   const lastIdent = identifiers.at(-1)!;
+    //   const data = this.symbols[0].get(name, "loc")!;
+    //
+    //   this.raiseDuplicateVariableError(
+    //     name,
+    //     data,
+    //     new Range(lastIdent.startOffset, lastIdent.endOffset! + 1),
+    //     "import",
+    //   );
+    // }
+
+    const lastIdent = identifiers.at(-1)!;
+    //this.symbols[0].insert(name, {
+    //  kind: "import",
+    //  loc: new Range(lastIdent.startOffset, lastIdent.endOffset! + 1),
+    //  path: subPath,
+    //});
+
+    //this.symbols[0].insert(fullPath.join(":"), {
+    //  kind: "import",
+    //  loc: new Range(identifiers[0].startOffset, lastIdent.endOffset! + 1),
+    //});
 
     let currentNode: any = this.parseIdentifier(identifiers[0]);
 
@@ -236,7 +923,10 @@ class SCParser extends BaseParser {
     let parameters;
     let body;
 
-    returnType = this.stream.consume(Token.DataType);
+    returnType = this.parseDataType();
+
+    // returnType = this.stream.consume(Token.DataType, Token.Identifier);
+
     this.stream.consumeSeq([Token.Colon, Token.FnKw]);
     ident = this.stream.consume(Token.Identifier);
 
@@ -303,6 +993,7 @@ class SCParser extends BaseParser {
       ) {
         body.push(this.parseVariableDeclaration());
       }
+
       if (this.stream.match(Token.Identifier, Token.PrefixOperator)) {
         body.push(this.parseExpression());
       }
@@ -668,7 +1359,87 @@ class SCParser extends BaseParser {
       if (this.stream.match(Token.LParen)) {
         return this.parseCallExpression(ident);
       } else if (this.stream.match(Token.Colon, Token.LBracket)) {
-        return this.parseMemberExpression(ident);
+        const memberExpression = this.parseMemberExpression(ident);
+        // const memExpr = this.parseMemberExpression(ident);
+
+        // console.log("J", memberExpression);
+        let identifier;
+
+        if (memberExpression instanceof CallExpressionNode) {
+          identifier = memberExpression.callee;
+        } else {
+          identifier = memberExpression;
+        }
+
+        if (identifier instanceof MemberExpressionNode) {
+          let innerMostOffset = 0;
+          const parts: string[] = [];
+
+          const traverse = (node: MemberExpressionNode | IdentifierNode) => {
+            if (node instanceof IdentifierNode) {
+              parts.push(node.image);
+              innerMostOffset = node.span.start;
+            } else if (node instanceof MemberExpressionNode) {
+              traverse(node.object as MemberExpressionNode);
+
+              parts.push((node.property as IdentifierNode).image);
+            }
+          };
+
+          traverse(identifier);
+
+          // if (!this.scope().lookup(parts.join(":"))) {
+          //   const prop = identifier.property;
+          //
+          //   if (prop instanceof IdentifierNode) {
+          //     this.raiseUndefinedVariableError(
+          //       parts.join(":"),
+          //       new Range(innerMostOffset, prop.span.end),
+          //     );
+          //   }
+          // }
+        }
+
+        // const newExpr = this.parseMemberExpression(ident);
+
+        // let innerMostOffset = 0;
+        // const parts: string[] = [];
+        //
+        // const traverse = (node: MemberExpressionNode | IdentifierNode) => {
+        //   if (node instanceof IdentifierNode) {
+        //     parts.push(node.image);
+        //
+        //     innerMostOffset = node.span.start;
+        //   } else if (node instanceof MemberExpressionNode) {
+        //     traverse(node.object as MemberExpressionNode);
+        //
+        //     parts.push((node.property as IdentifierNode).image);
+        //   }
+        // };
+        //
+        // traverse(memExpr);
+        // const identifier = memExpr.property;
+        //
+        // if (identifier === undefined) {
+        //   // console.log("Hhg", memExpr);
+        // }
+        //
+        // if (!this.scope().lookup(parts.join(":"))) {
+        //   if (ident instanceof IdentifierNode) {
+        //     console.log("EHEHE");
+        //
+        //     this.raiseUndefinedVariableError(identifier.image, identifier.span);
+        //   } else {
+        //     console.log("NONONONOONONO", identifier);
+        //
+        //     // this.raiseUndefinedVariableError(
+        //     //   parts.join(":"),
+        //     //   new Range(innerMostOffset, identifier.span.end),
+        //     // );
+        //   }
+        // }
+
+        return memberExpression;
       }
 
       let expr = this.parseIdentifier(ident);
@@ -754,26 +1525,17 @@ class SCParser extends BaseParser {
 
       traverse(ident);
 
-      if (!this.scope().lookup(parts[0])) {
-        if (ident instanceof IdentifierNode) {
-          this.raiseUndefinedVariableError(identifier.image, identifier.span);
-        } else {
-          this.raiseUndefinedVariableError(
-            parts.join(":"),
-            new Range(innerMostOffset, identifier.span.end),
-          );
-        }
-        //
-        // if (
-        //   !this.scope().lookup(parts.join(":")) &&
-        //   !this.scope().lookup(identifier.image)
-        // ) {
-        //
+      if (this.scope().lookup(parts.join(":")) === undefined) {
+        // if (ident instanceof IdentifierNode) {
+        //   this.raiseUndefinedVariableError(identifier.image, identifier.span);
+        // } else {
+        //   this.raiseUndefinedVariableError(
+        //     parts.join(":"),
+        //     new Range(innerMostOffset, identifier.span.end),
+        //   );
         // }
       } else {
-        const data = this.scope().lookup(parts[0]);
-
-        // if (data!.attributes.kind !== "import") {
+        // if (!this.scope().lookup(parts[0])) {
         //   if (ident instanceof IdentifierNode) {
         //     this.raiseUndefinedVariableError(identifier.image, identifier.span);
         //   } else {
@@ -784,6 +1546,37 @@ class SCParser extends BaseParser {
         //   }
         // }
       }
+
+      // if (!this.scope().lookup(parts[0])) {
+      //   if (ident instanceof IdentifierNode) {
+      //     this.raiseUndefinedVariableError(identifier.image, identifier.span);
+      //   } else {
+      //     this.raiseUndefinedVariableError(
+      //       parts.join(":"),
+      //       new Range(innerMostOffset, identifier.span.end),
+      //     );
+      //   }
+      //   //
+      //   // if (
+      //   //   !this.scope().lookup(parts.join(":")) &&
+      //   //   !this.scope().lookup(identifier.image)
+      //   // ) {
+      //   //
+      //   // }
+      // } else {
+      //   const data = this.scope().lookup(parts[0]);
+      //
+      //   // if (data!.attributes.kind !== "import") {
+      //   //   if (ident instanceof IdentifierNode) {
+      //   //     this.raiseUndefinedVariableError(identifier.image, identifier.span);
+      //   //   } else {
+      //   //     this.raiseUndefinedVariableError(
+      //   //       parts.join(":"),
+      //   //       new Range(innerMostOffset, identifier.span.end),
+      //   //     );
+      //   //   }
+      //   // }
+      // }
     }
 
     return new CallExpressionNode(
