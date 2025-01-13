@@ -1,15 +1,6 @@
-# .
+# Language Written in Typescript
 
-To install dependencies:
+WIP Language written in Typecript to get
+a better understanding of compiler design for the future.
 
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run src/main.ts
-```
-
-This project was created using `bun init` in bun v1.1.29. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+Not intended to be finished.
